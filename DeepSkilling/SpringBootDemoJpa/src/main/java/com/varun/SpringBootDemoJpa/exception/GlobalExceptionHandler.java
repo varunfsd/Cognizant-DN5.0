@@ -29,6 +29,20 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                false,
+                ex.getMessage(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDuplicateKey(
             DataIntegrityViolationException ex) {
@@ -39,7 +53,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
-        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Internal Server Error");
     }

@@ -1,5 +1,6 @@
 package com.varun.SpringBootDemoJpa.service;
 
+import com.varun.SpringBootDemoJpa.dto.UpdateStudentRequest;
 import com.varun.SpringBootDemoJpa.exception.ResourceNotFoundException;
 import com.varun.SpringBootDemoJpa.exception.StudentAlreadyExistsException;
 import com.varun.SpringBootDemoJpa.model.Student;
@@ -38,5 +39,22 @@ public class StudentService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Student not found with registration number: " + regNo));
+    }
+
+
+    public Student updateStudent(int regNo, UpdateStudentRequest request) {
+        Student existingStudent = studentRepository.findById(regNo)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Student not found with Reg No: " + regNo));
+        if(request.getFullName()!=null){
+            existingStudent.setFullName(request.getFullName());
+        }
+        return studentRepository.save(existingStudent);
+    }
+
+    public void deleteStudent(int regNo) {
+        Student existingStudent=studentRepository.findById(regNo).orElseThrow(()->
+                new ResourceNotFoundException("Student not found with registration number: " + regNo));
+        studentRepository.delete(existingStudent);
     }
 }

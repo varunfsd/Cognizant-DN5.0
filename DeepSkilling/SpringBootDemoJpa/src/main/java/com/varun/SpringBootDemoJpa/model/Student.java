@@ -2,8 +2,10 @@ package com.varun.SpringBootDemoJpa.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
+@DynamicUpdate
 public class Student {
     @Id
     private int regNo;

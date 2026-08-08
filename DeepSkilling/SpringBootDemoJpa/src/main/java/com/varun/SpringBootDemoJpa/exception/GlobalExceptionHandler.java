@@ -43,6 +43,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUserAlreadyExists(
+            UserAlreadyExistsException ex) {
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                false,
+                ex.getMessage(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(response);
+    }
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDuplicateKey(
             DataIntegrityViolationException ex) {

@@ -22,11 +22,16 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            CustomUserDetailsService customUserDetailsService,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -60,8 +65,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
 
+                // OAuth2 needs a temporary session during the
+                // GitHub authorization process.
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.IF_REQUIRED
+                        )
                 )
 
                 .authenticationProvider(authenticationProvider())
@@ -72,9 +81,29 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register").permitAll()
-                        .requestMatchers("/students/**").hasRole("USER")
+
+                        // Normal login/register
+                        .requestMatchers(
+                                "/login",
+                                "/register","/test"
+                        ).permitAll()
+
+                        // OAuth2 endpoints
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
+                        ).permitAll()
+
+                        // Student APIs
+                        .requestMatchers("/students/**")
+                        .hasRole("USER")
+
                         .anyRequest().authenticated()
+                )
+
+                // Enable GitHub OAuth2
+                .oauth2Login(oauth ->
+                        oauth.successHandler(oAuth2LoginSuccessHandler)
                 );
 
         return http.build();
